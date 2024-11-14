@@ -31,7 +31,14 @@ pipeline {
                 '''
             }
         }
-
+stage('Prepare Environment') {
+            steps {
+                echo 'Pulling the Docker image with PHP and PHPUnit'
+                sh '''
+                    docker pull bassam2080/my-docker-php8-phpunit-image
+                '''
+            }
+        }
         stage('Test Database Connection') {
             steps {
                 echo "Running Database Connection Test"
