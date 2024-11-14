@@ -31,6 +31,19 @@ pipeline {
 		     //   
                              
 		//        '''
+
+       stage('Test Database Connection') {
+            steps {
+                echo "Running Database Connection Test"
+                
+                // Ensure PHP and PHPUnit are accessible
+                sh 'php -v'
+                sh 'phpunit --version'
+                
+                // Run the PHPUnit test specifically for the database connection
+                sh 'vendor/bin/phpunit --filter DbConnectionTest'
+            }
+        }
         stage('Clean') {
             steps {
              echo "hi"
