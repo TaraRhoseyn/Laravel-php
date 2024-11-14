@@ -11,15 +11,14 @@ WORKDIR /var/www/html/
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Install necessary PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql dom json mbstring
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 
 # Install PHPUnit 10
-RUN composer global require phpunit/phpunit:^10 \
-    && ln -s /root/.composer/vendor/bin/phpunit /usr/local/bin/phpunit
+ENV PATH="/root/.composer/vendor/bin:${PATH}"
+RUN composer global require phpunit/phpunit:^10
 
 # Expose port 80
 EXPOSE 80
-
