@@ -34,7 +34,7 @@ pipeline {
         stage('Clean') {
             steps {
              echo "hi"
-	    sh  'docker compose down'
+	  //  sh  'docker compose down'
             }
         }
     }
