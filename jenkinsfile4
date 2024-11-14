@@ -38,7 +38,7 @@ stage('Run Tests') {
                     sh 'docker exec laravel-phptest-web-1 /usr/local/bin/php /usr/local/bin/composer require --dev phpunit/phpunit'
 
                     // Run PHPUnit tests
-                    sh 'docker exec laravel-phptest-web-1 /usr/local/bin/php ./vendor/bin/phpunit --log-junit /var/www/html/tests/report.xml
+                    sh 'docker exec laravel-phptest-web-1 /usr/local/bin/php ./vendor/bin/phpunit --log-junit /var/www/html/tests/report.xml's
                 }
             }
         }
