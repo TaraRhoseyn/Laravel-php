@@ -1,8 +1,8 @@
 # Use the official PHP 8.2 image with Apache
 FROM php:8.2-apache
 
-# Copy application code to the container
-COPY myapp/ /var/www/html
+# Set a reliable DNS resolver
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
 # Set the working directory
 WORKDIR /var/www/html/
@@ -11,7 +11,7 @@ WORKDIR /var/www/html/
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Install necessary system libraries and PHP extensions
-RUN apt-get update && apt-get install -y \
+RUN apt-get clean && apt-get update && apt-get install -y \
     libxml2-dev \
     libonig-dev \
     libcurl4-openssl-dev \
@@ -27,3 +27,6 @@ RUN composer global require phpunit/phpunit:^10
 
 # Expose port 80
 EXPOSE 80
+
+# Copy application code to the container
+COPY myapp/ /var/www/html
