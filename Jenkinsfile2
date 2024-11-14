@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'bassam2080/php-phpunit-image'  // Replace with your image name
+            image 'bassam2080/my-docker-php8-phpunit-image'  // Replace with your image name
             args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root and mount Docker socket
         }
     }
