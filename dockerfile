@@ -1,8 +1,10 @@
 # Use the official PHP 8.2 image with Apache
 FROM php:8.2-apache
 
-# Replace Debian mirrors to address DNS resolution issues
-RUN sed -i 's|http://deb.debian.org|http://mirror.debian.org|g' /etc/apt/sources.list
+# Add default sources.list
+RUN echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
 
 # Install necessary system libraries and PHP extensions
 RUN apt-get update && apt-get install -y \
