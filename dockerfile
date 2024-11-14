@@ -10,8 +10,13 @@ WORKDIR /var/www/html/
 # Set the ServerName for Apache
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Install necessary PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql dom json mbstring
+# Install necessary system libraries and PHP extensions
+RUN apt-get update && apt-get install -y \
+    libxml2-dev \
+    libonig-dev \
+    libcurl4-openssl-dev \
+    libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql dom mbstring
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
