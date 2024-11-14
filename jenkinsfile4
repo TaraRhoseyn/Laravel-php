@@ -27,18 +27,23 @@ pipeline {
 stage('Run Tests') {
             steps {
                 script {
-                    // Install Composer using the correct PHP path
-                    sh 'docker exec laravel-phptest-web-1 curl -sS https://getcomposer.org/installer | /usr/bin/php'
-                    sh 'docker exec laravel-phptest-web-1 mv composer.phar /usr/local/bin/composer'
+                    // Install Composer if not already installed
+                    sh '''
+                        if ! docker exec laravel-php-web1 composer --version > /dev/null 2>&1; then
+                            docker exec laravel-php-web1 curl -sS https://getcomposer.org/installer | php
+                            docker exec laravel-php-web1 mv composer.phar /usr/local/bin/composer
+                        fi
+                    '''
 
-                    // Verify Composer installation
-                    sh 'docker exec laravel-phptest-web-1 /usr/bin/php /usr/local/bin/composer --version'
+                    // Install PHPUnit only if it's not already installed
+                    sh '''
+                        if ! docker exec laravel-php-web1 ./vendor/bin/phpunit --version > /dev/null 2>&1; then
+                            docker exec laravel-php-web1 composer require --dev phpunit/phpunit
+                        fi
+                    '''
 
-                    // Install PHPUnit via Composer
-                    sh 'docker exec laravel-phptest-web-1 /usr/bin/php /usr/local/bin/composer require --dev phpunit/phpunit'
-
-                    // Run PHPUnit tests
-                    sh 'docker exec laravel-phptest-web-1 /usr/bin/php ./vendor/bin/phpunit --log-junit /var/www/html/tests/report.xml'
+                    // Run PHPUnit tests and generate a JUnit XML report
+                    sh 'docker exec laravel-php-web-1 phpunit --log-junit /var/www/html/tests/report.xml'
                 }
             }
         }
@@ -46,7 +51,7 @@ stage('Run Tests') {
         stage('Publish Test Results') {
             steps {
                 // Copy test report to Jenkins workspace
-                sh 'docker cp laravel-phptest-web-1:/var/www/html/tests/report.xml ./report.xml'
+                sh 'docker cp laravel-php-web-1:/var/www/html/tests/report.xml ./report.xml'
 
                 // Publish the test results
                 junit 'report.xml'
@@ -69,5 +74,3 @@ stage('Run Tests') {
             }
         }
     }
-
-}
