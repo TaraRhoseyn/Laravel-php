@@ -2,7 +2,7 @@ pipeline {
      agent {
         docker {
             image 'docker:latest'
-            args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root and mount Docker socket
+            args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock --dns 8.8.8.8 --dns 8.8.4.4'
         }
     }
 	
@@ -11,29 +11,32 @@ pipeline {
 	}
   stages {
         stage('Setup PHP and PHPUnit') {
-            steps {
-                echo "Installing PHP 8 and PHPUnit"
+    steps {
+        echo "Installing PHP 8 and PHPUnit"
+        sh '''
+            # Update repositories to a more reliable mirror
+            echo "http://mirror.clarkson.edu/alpine/v3.20/main" > /etc/apk/repositories
+            echo "http://mirror.clarkson.edu/alpine/v3.20/community" >> /etc/apk/repositories
 
-                // Update and install PHP 8 and Composer on the docker:dind environment
-                sh '''
-                    apk update
-                    apk add --no-cache php8 php8-cli php8-phar php8-json php8-openssl php8-pdo php8-pdo_mysql php8-mbstring php8-dom php8-tokenizer php8-xml php8-ctype php8-session curl
+            # Update and install PHP 8 and Composer
+            apk update
+            apk add --no-cache php8 php8-cli php8-phar php8-json php8-openssl php8-pdo php8-pdo_mysql php8-mbstring php8-dom php8-tokenizer php8-xml php8-ctype php8-session curl
 
-                    # Install Composer
-                    curl -sS https://getcomposer.org/installer | php8 -- --install-dir=/usr/local/bin --filename=composer
+            # Install Composer
+            curl -sS https://getcomposer.org/installer | php8 -- --install-dir=/usr/local/bin --filename=composer
 
-                    # Install PHPUnit via Composer
-                    composer global require phpunit/phpunit --prefer-dist
+            # Install PHPUnit via Composer
+            composer global require phpunit/phpunit --prefer-dist
 
-                    # Add Composer's global bin directory to PATH
-                    export PATH="$PATH:/root/.composer/vendor/bin"
+            # Add Composer's global bin directory to PATH
+            export PATH="$PATH:/root/.composer/vendor/bin"
 
-                    # Verify installations
-                    php -v
-                    phpunit --version
-                '''
-            }
-        }
+            # Verify installations
+            php -v
+            phpunit --version
+        '''
+    }
+}
     
         stage('Docker Login') {
             steps {
