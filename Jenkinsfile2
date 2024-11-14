@@ -1,86 +1,64 @@
 pipeline {
-     agent {
+    agent {
         docker {
-            image 'docker:latest'
-            args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock --dns 8.8.8.8 --dns 8.8.4.4'
+            image 'your_dockerhub_username/php-phpunit-image'  // Replace with your image name
+            args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root and mount Docker socket
         }
     }
-	
+
     environment {
-		DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
-	}
-  stages {
-        stage('Setup PHP and PHPUnit') {
-    steps {
-        echo "Installing PHP 8 and PHPUnit"
-        sh '''
-            # Update repositories to a more reliable mirror
-            echo "http://mirror.clarkson.edu/alpine/v3.20/main" > /etc/apk/repositories
-            echo "http://mirror.clarkson.edu/alpine/v3.20/community" >> /etc/apk/repositories
-
-            # Update and install PHP 8 and Composer
-            apk update
-            apk add --no-cache php8 php8-cli php8-phar php8-json php8-openssl php8-pdo php8-pdo_mysql php8-mbstring php8-dom php8-tokenizer php8-xml php8-ctype php8-session curl
-
-            # Install Composer
-            curl -sS https://getcomposer.org/installer | php8 -- --install-dir=/usr/local/bin --filename=composer
-
-            # Install PHPUnit via Composer
-            composer global require phpunit/phpunit --prefer-dist
-
-            # Add Composer's global bin directory to PATH
-            export PATH="$PATH:/root/.composer/vendor/bin"
-
-            # Verify installations
-            php -v
-            phpunit --version
-        '''
+        DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')  // Your Docker Hub credentials stored in Jenkins
     }
-}
-    
+
+    stages {
         stage('Docker Login') {
             steps {
+                echo "Logging into Docker Hub"
                 sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
         }
-        stage('Build & push Dockerfile') {
+
+        stage('Build & Push Docker Image') {
             steps {
-                  sh '''
-		       
-		        docker stop laravel-container || true
-		        docker rm laravel-container || true
-		        docker rmi bassam2080/laravel-php || true
-		        docker build -t bassam2080/laravel-php .
-                        docker compose up -d
-		        docker push bassam2080/laravel-php
-		        '''
+                echo "Building and pushing Docker image"
+                sh '''
+                    docker stop laravel-container || true
+                    docker rm laravel-container || true
+                    docker rmi bassam2080/laravel-php || true
+                    docker build -t bassam2080/laravel-php .
+                    docker-compose up -d
+                    docker push bassam2080/laravel-php
+                '''
             }
         }
-	      //sh '''
-		      //  docker compose down
-	               // docker stop laravel-container || true
-		       // docker rm laravel-container || true
-		      //  docker rmi bassam2080/laravel-php || true
-		     //   
-                             
-		//        '''
 
- stage('Test Database Connection') {
+        stage('Test Database Connection') {
             steps {
-                echo "Stage: Test Database Connection"
-               sh 'php -v'
-              sh 'phpunit --version'
-                sh 'vendor/bin/phpunit --filter DbConnectionTest'  // Run only DbConnectionTest
+                echo "Running Database Connection Test"
+                
+                // Ensure PHP and PHPUnit are accessible
+                sh 'php -v'
+                sh 'phpunit --version'
+                
+                // Run the PHPUnit test specifically for the database connection
+                sh 'vendor/bin/phpunit --filter DbConnectionTest'
             }
         }
 
         stage('Clean') {
             steps {
-             echo "hi"
-	    sh  'docker compose down'
+                echo "Cleaning up Docker resources"
+                sh 'docker-compose down'  // Stop and remove any Docker containers started with docker-compose
             }
         }
     }
+
+    post {
+        success {
+            echo 'Build and Test completed successfully!'
+        }
+        failure {
+            echo 'Build or Test failed. Check the logs for details.'
+        }
+    }
 }
-
-
