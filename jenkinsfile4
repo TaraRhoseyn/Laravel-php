@@ -29,21 +29,21 @@ stage('Run Tests') {
                 script {
                     // Install Composer if not already installed
                     sh '''
-                        if ! docker exec laravel-php-web1 composer --version > /dev/null 2>&1; then
-                            docker exec laravel-php-web1 curl -sS https://getcomposer.org/installer | php
-                            docker exec laravel-php-web1 mv composer.phar /usr/local/bin/composer
+                        if ! docker exec laravel-phptest-web-1 composer --version > /dev/null 2>&1; then
+                            docker exec laravel-phptest-web-1 curl -sS https://getcomposer.org/installer | php
+                            docker exec laravel-phptest-web-1 mv composer.phar /usr/local/bin/composer
                         fi
                     '''
 
                     // Install PHPUnit only if it's not already installed
                     sh '''
-                        if ! docker exec laravel-php-web1 ./vendor/bin/phpunit --version > /dev/null 2>&1; then
-                            docker exec laravel-php-web1 composer require --dev phpunit/phpunit
+                        if ! docker exec laravel-phptest-web-1 ./vendor/bin/phpunit --version > /dev/null 2>&1; then
+                            docker exec laravel-phptest-web-1 composer require --dev phpunit/phpunit
                         fi
                     '''
 
                     // Run PHPUnit tests and generate a JUnit XML report
-                    sh 'docker exec laravel-php-web-1 phpunit --log-junit /var/www/html/tests/report.xml'
+                    sh 'docker exec laravel-phptest-web-1 phpunit --log-junit /var/www/html/tests/report.xml'
                 }
             }
         }
@@ -51,7 +51,7 @@ stage('Run Tests') {
         stage('Publish Test Results') {
             steps {
                 // Copy test report to Jenkins workspace
-                sh 'docker cp laravel-php-web-1:/var/www/html/tests/report.xml ./report.xml'
+                sh 'docker cp laravel-phptest-web-1:/var/www/html/tests/report.xml ./report.xml'
 
                 // Publish the test results
                 junit 'report.xml'
