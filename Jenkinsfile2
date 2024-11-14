@@ -1,9 +1,39 @@
 pipeline {
-    agent any
+     agent {
+        docker {
+            image 'docker:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'  // Mount Docker socket for Docker-in-Docker
+        }
+    }
 	
     environment {
 		DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
 	}
+  stages {
+        stage('Setup PHP and PHPUnit') {
+            steps {
+                echo "Installing PHP 8 and PHPUnit"
+
+                // Update and install PHP 8 and Composer on the docker:dind environment
+                sh '''
+                    apk update
+                    apk add --no-cache php8 php8-cli php8-phar php8-json php8-openssl php8-pdo php8-pdo_mysql php8-mbstring php8-dom php8-tokenizer php8-xml php8-ctype php8-session curl
+
+                    # Install Composer
+                    curl -sS https://getcomposer.org/installer | php8 -- --install-dir=/usr/local/bin --filename=composer
+
+                    # Install PHPUnit via Composer
+                    composer global require phpunit/phpunit --prefer-dist
+
+                    # Add Composer's global bin directory to PATH
+                    export PATH="$PATH:/root/.composer/vendor/bin"
+
+                    # Verify installations
+                    php -v
+                    phpunit --version
+                '''
+            }
+        }
     stages {
         stage('Docker Login') {
             steps {
