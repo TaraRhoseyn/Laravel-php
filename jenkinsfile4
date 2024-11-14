@@ -27,23 +27,18 @@ pipeline {
 stage('Run Tests') {
             steps {
                 script {
-                    // Install Composer if not already installed
-                    sh '''
-                        if ! docker exec laravel-phptest-web-1 composer --version > /dev/null 2>&1; then
-                            docker exec laravel-phptest-web-1 curl -sS https://getcomposer.org/installer | php
-                            docker exec laravel-phptest-web-1 mv composer.phar /usr/local/bin/composer
-                        fi
-                    '''
+                    // Use absolute path for PHP
+                    sh 'docker exec laravel-phptest-web-1 /usr/local/bin/php --version'
 
-                    // Install PHPUnit only if it's not already installed
-                    sh '''
-                        if ! docker exec laravel-phptest-web-1 ./vendor/bin/phpunit --version > /dev/null 2>&1; then
-                            docker exec laravel-phptest-web-1 composer require --dev phpunit/phpunit
-                        fi
-                    '''
+                    // Install Composer
+                    sh 'docker exec laravel-phptest-web-1 curl -sS https://getcomposer.org/installer | /usr/local/bin/php'
+                    sh 'docker exec laravel-phptest-web-1 mv composer.phar /usr/local/bin/composer'
 
-                    // Run PHPUnit tests and generate a JUnit XML report
-                    sh 'docker exec laravel-phptest-web-1 phpunit --log-junit /var/www/html/tests/report.xml'
+                    // Install PHPUnit
+                    sh 'docker exec laravel-phptest-web-1 /usr/local/bin/composer require --dev phpunit/phpunit'
+
+                    // Run PHPUnit tests
+                    sh 'docker exec laravel-phptest-web-1 ./vendor/bin/phpunit --log-junit /var/www/html/tests/report.xml'
                 }
             }
         }
