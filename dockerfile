@@ -1,34 +1,6 @@
-# Use the official PHP 8.2 image with Apache
-FROM php:8.2-apache
-
-# Add default sources.list
-RUN echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list && \
-    echo "deb http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list && \
-    echo "deb http://deb.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
-
-# Install necessary system libraries and PHP extensions
-RUN apt-get update && apt-get install -y \
-    libxml2-dev \
-    libonig-dev \
-    libcurl4-openssl-dev \
-    libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql dom mbstring
-
-# Set the working directory
-WORKDIR /var/www/html/
-
-# Set the ServerName for Apache
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
-
-# Install PHPUnit 10
-ENV PATH="/root/.composer/vendor/bin:${PATH}"
-RUN composer global require phpunit/phpunit:^10
-
-# Expose port 80
+From php:8.2-apache
+COPY  myapp/ /var/www/html
+WORKDIR var/www/html/
+RUN echo "ServerName localhost">> /etc/apache2/appache2.conf
+RUN  docker-php-ext-install pdo pdo_mysql
 EXPOSE 80
-
-# Copy application code to the container
-COPY myapp/ /var/www/html
