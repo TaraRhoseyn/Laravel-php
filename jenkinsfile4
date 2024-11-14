@@ -57,16 +57,8 @@ stage('Run Tests') {
                 junit 'report.xml'
             }
         }
-    }
-    post {
-        always {
-            script {
-                // Stop and remove the Laravel container to clean up
-                sh 'docker stop laravel-php-web || true'
-                sh 'docker rm laravel-php-web || true'
-            }
-        }
-    }
+    
+  
 	      //sh '''
 		      //  docker compose down
 	               // docker stop laravel-container || true
