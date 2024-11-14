@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+	
+    environment {
+		DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
+	}
+    stages {
+        stage('Docker Login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+        stage('Build & push Dockerfile') {
+            steps {
+                  sh '''
+		       
+		        docker stop laravel-container || true
+		        docker rm laravel-container || true
+		        docker rmi bassam2080/laravel-php || true
+		        docker build -t bassam2080/laravel-php .
+                        docker compose up -d
+		        docker push bassam2080/laravel-php
+		        '''
+            }
+        }
+
+stage('Run Tests') {
+            steps {
+                script {
+                    // Install Composer if not already installed
+                    sh '''
+                        if ! docker exec laravel-php-web1 composer --version > /dev/null 2>&1; then
+                            docker exec laravel-php-web1 curl -sS https://getcomposer.org/installer | php
+                            docker exec laravel-php-web1 mv composer.phar /usr/local/bin/composer
+                        fi
+                    '''
+
+                    // Install PHPUnit only if it's not already installed
+                    sh '''
+                        if ! docker exec laravel-php-web1 ./vendor/bin/phpunit --version > /dev/null 2>&1; then
+                            docker exec laravel-php-web1 composer require --dev phpunit/phpunit
+                        fi
+                    '''
+
+                    // Run PHPUnit tests and generate a JUnit XML report
+                    sh 'docker exec laravel-php-web-1 phpunit --log-junit /var/www/html/tests/report.xml'
+                }
+            }
+        }
+
+        stage('Publish Test Results') {
+            steps {
+                // Copy test report to Jenkins workspace
+                sh 'docker cp laravel-php-web-1:/var/www/html/tests/report.xml ./report.xml'
+
+                // Publish the test results
+                junit 'report.xml'
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                // Stop and remove the Laravel container to clean up
+                sh 'docker stop laravel-php-web || true'
+                sh 'docker rm laravel-php-web || true'
+            }
+        }
+    }
+	      //sh '''
+		      //  docker compose down
+	               // docker stop laravel-container || true
+		       // docker rm laravel-container || true
+		      //  docker rmi bassam2080/laravel-php || true
+		     //   
+                             
+		//        '''
+        stage('Clean') {
+            steps {
+             echo "hi"
+	  //  sh  'docker compose down'
+            }
+        }
+    }
+}
