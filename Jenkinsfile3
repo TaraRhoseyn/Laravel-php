@@ -31,7 +31,13 @@ pipeline {
 		     //   
                              
 		//        '''
-
+      stage('Run Tests') {
+            agent {
+                docker {
+                    image 'bassam2080/laravel-php' // Use your custom Docker image with PHP installed
+                    args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
        stage('Test Database Connection') {
             steps {
                 echo "Running Database Connection Test"
