@@ -5,7 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
         EC2_SSH_CREDENTIALS = credentials('d3dd818a-f876-4f0f-a336-fbcbd332dd5c') // Add your SSH credentials ID here
         EC2_HOST = 'ec2-16-16-185-81.eu-north-1.compute.amazonaws.com' // Replace with your EC2 instance IP or hostname
-        EC2_USER = 'bassam2080' // Replace with your EC2 username (e.g., 'ubuntu' for Ubuntu instances)
+        EC2_USER = 'ubuntu' // Replace with your EC2 username (e.g., 'ubuntu' for Ubuntu instances)
     }
 
     stages {
