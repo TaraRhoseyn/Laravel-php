@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
-        EC2_SSH_CREDENTIALS = credentials('d3dd818a-f876-4f0f-a336-fbcbd332dd5c') // Add your SSH credentials ID here
+        EC2_SSH_CREDENTIALS = credentials('16.16.185.81') // Add your SSH credentials ID here
         EC2_HOST = 'ec2-16-16-185-81.eu-north-1.compute.amazonaws.com' // Replace with your EC2 instance IP or hostname
         EC2_USER = 'ubuntu' // Replace with your EC2 username (e.g., 'ubuntu' for Ubuntu instances)
     }
@@ -29,7 +29,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent(['d3dd818a-f876-4f0f-a336-fbcbd332dd5c']) { // Use the ID of your SSH credentials
+                sshagent(['16.16.185.81']) { // Use the ID of your SSH credentials
                     sh """
                         ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
                             # Update and upgrade packages
