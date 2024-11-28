@@ -1,0 +1,81 @@
+---
+- name: Docker and Laravel Setup
+  hosts: web
+  become: yes  # Ensures the playbook runs with sudo privileges
+  tasks:
+    - name: Update the system
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker’s official GPG key
+      shell: >
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | 
+        gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+    - name: Set up the Docker stable repository
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | 
+        tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    - name: Update the package database again
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+    - debug:
+        var: docker_version.stdout
+
+    - name: Enable and start Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Add user to Docker group
+      shell: |
+        groupadd -f docker &&
+        usermod -aG docker {{ ansible_user_id }} &&
+        chmod 666 /var/run/docker.sock
+
+    - name: Pull Laravel Docker image
+      command: docker pull bassam2080/laravel-php
+
+    - name: Run Laravel container
+      docker_container:
+        name: laravel_app
+        image: bassam2080/laravel-php
+        ports:
+          - "5000:80"
+        state: started
+
+    - name: Ping the server
+      ansible.builtin.ping:
+
+    - name: Run a basic uptime command
+      ansible.builtin.shell: uptime
+      register: uptime_output
+
+    - name: Display uptime
+      debug:
+        var: uptime_output.stdout
