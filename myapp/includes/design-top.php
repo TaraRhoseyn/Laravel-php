@@ -1,3 +1,3 @@
 <div class="jumbotron">
-	<h1>Hello there!</h1>
+	<h1>Sweet Delights Bakery</h1>
 </div>

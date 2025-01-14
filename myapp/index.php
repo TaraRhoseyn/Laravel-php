@@ -10,15 +10,17 @@
 <?php include("includes/navigation.php");?>
 
 <div class="container" id="main-content">
-	<h2>Welcome to my website!</h2>
-	<p>Some content goes here! Let's go with the classic "lorem ipsum."</p>
+    <h2>Welcome to Sweet Delights Bakery</h2>
+    <p>Discover the magic of freshly baked goods made with love and tradition. Our family-owned bakery has been serving the community for over 20 years, bringing smiles with every bite.</p>
 
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-	</p>
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-	</p>
+    <h3>Today's Specials</h3>
+    <p>Start your day with our signature croissants, handcrafted sourdough bread, or indulge in our famous chocolate chip cookies. Every item is baked fresh daily using premium ingredients and traditional recipes passed down through generations.</p>
+
+    <h3>Pre-Order for Special Occasions</h3>
+    <p>Planning a celebration? From birthday cakes to wedding pastries, we create custom desserts that make your special moments unforgettable. Place your order 48 hours in advance to ensure availability.</p>
+    
+    <h3>Visit Us</h3>
+    <p>Stop by our cozy shop on Main Street to experience the warm aroma of fresh bread and pastries. Enjoy your treats in our charming café area with a cup of freshly brewed coffee.</p>
 </div>
 
 <?php include("includes/footer.php");

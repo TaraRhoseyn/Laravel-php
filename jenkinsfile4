@@ -1,72 +1,87 @@
 pipeline {
     agent any
-	
+
     environment {
-		DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
-	}
+        DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
+        EC2_SSH_CREDENTIALS = credentials('16.16.185.81') // Replace with your actual credentials ID
+        EC2_HOST = 'ec2-16-16-185-81.eu-north-1.compute.amazonaws.com' // Replace with your EC2 instance IP or hostname
+        EC2_USER = 'ubuntu' // Replace with your EC2 username (e.g., 'ubuntu' for Ubuntu instances)
+    }
+
     stages {
         stage('Docker Login') {
             steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-            }
-        }
-        stage('Build & push Dockerfile') {
-            steps {
-                  sh '''
-		       
-		        docker stop laravel-container || true
-		        docker rm laravel-container || true
-		        docker rmi bassam2080/laravel-php || true
-		        docker build -t bassam2080/laravel-php .
-                        docker compose up -d
-		        docker push bassam2080/laravel-php
-		        '''
+                sh '''
+                    echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
+                '''
             }
         }
 
-stage('Run Tests') {
+        stage('Build & Push Docker Image') {
             steps {
-                script {
-                        // Install Composer using the correct PHP path
-                    sh 'docker exec laravel-phptest-web-1 curl -sS https://getcomposer.org/installer | /usr/local/bin/php'
-                    sh 'docker exec laravel-phptest-web-1 mv composer.phar /usr/local/bin/composer'
+                sh '''
+                    docker stop laravel-container || true
+                    docker rm laravel-container || true
+                    docker rmi bassam2080/laravel-php || true
+                    docker build -t bassam2080/laravel-php .
+                    docker push bassam2080/laravel-php
+                '''
+            }
+        }
 
-                    // Verify Composer installation
-                    sh 'docker exec laravel-phptest-web-1 /usr/local/bin/php /usr/local/bin/composer --version'
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(['16.16.185.81']) { // Use the correct ID of your SSH credentials
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
+# Update and upgrade packages
+sudo apt update && sudo apt upgrade -y
 
-                    // Install PHPUnit via Composer
-                    sh 'docker exec laravel-phptest-web-1 /usr/local/bin/php /usr/local/bin/composer require --dev phpunit/phpunit'
+# Install Docker if not installed
+if ! command -v docker &> /dev/null
+then
+    sudo apt install -y docker.io
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -aG docker ${EC2_USER}
+    # Apply group changes
+    newgrp docker || true
+fi
 
-                    // Run PHPUnit tests
-                    sh 'docker exec laravel-phptest-web-1 /usr/local/bin/php ./vendor/bin/phpunit --log-junit /var/www/html/tests/report.xml's
+# Install Ansible if needed
+if ! command -v ansible &> /dev/null
+then
+    sudo apt install -y ansible
+fi
+
+# Pull the latest Docker image
+docker pull bassam2080/laravel-php
+
+# Stop and remove existing container if it exists
+docker stop laravel-container || true
+docker rm laravel-container || true
+
+# Run the new container
+docker run -d --name laravel-container -p 5000:80 bassam2080/laravel-php
+EOF
+                    '''
                 }
             }
         }
 
-        stage('Publish Test Results') {
-            steps {
-                // Copy test report to Jenkins workspace
-                sh 'docker cp laravel-php-web-1:/var/www/html/tests/report.xml ./report.xml'
-
-                // Publish the test results
-                junit 'report.xml'
-            }
-        }
-    
-  
-	      //sh '''
-		      //  docker compose down
-	               // docker stop laravel-container || true
-		       // docker rm laravel-container || true
-		      //  docker rmi bassam2080/laravel-php || true
-		     //   
-                             
-		//        '''
         stage('Clean') {
             steps {
-             echo "hi"
-	  //  sh  'docker compose down'
+                echo "Cleaning up..."
+                // Uncomment if you need to bring down Docker Compose services
+                // sh 'docker compose down'
             }
+        }
+    }
+
+    post {
+        always {
+            // Optional: Add any cleanup or notification steps here
+            echo "Pipeline completed."
         }
     }
 }
