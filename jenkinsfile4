@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('Docker_Hub')
+        DOCKERHUB_CREDENTIALS = credentials('docker-cred')
         EC2_SSH_CREDENTIALS = credentials('16.16.185.81') // Replace with your actual credentials ID
         EC2_HOST = 'ec2-16-16-185-81.eu-north-1.compute.amazonaws.com' // Replace with your EC2 instance IP or hostname
         EC2_USER = 'ubuntu' // Replace with your EC2 username (e.g., 'ubuntu' for Ubuntu instances)
