@@ -1,40 +1,44 @@
 pipeline {
     agent any
-	
-    environment {
-		DOCKERHUB_CREDENTIALS=credentials('Docker_Hub')
-	}
+
     stages {
-        stage('Docker Login') {
+        stage('Get Ready') {
             steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                // Print the name of the current stage
+                sh 'echo "Stage: Get Ready"'
+                // Include any preparation commands if needed
             }
         }
-        stage('Build & push Dockerfile') {
+
+        stage('Build') {
             steps {
-                  sh '''
-		       
-		        docker stop laravel-container || true
-		        docker rm laravel-container || true
-		        docker rmi bassam2080/laravel-php || true
-		        docker build -t bassam2080/laravel-php .
-                        docker compose up -d
-		        docker push bassam2080/laravel-php
-		        '''
+                // Print the name of the current stage
+                sh 'echo "Stage: Build"'
+                // Add build commands if needed (example: compile code)
             }
         }
-	      //sh '''
-		      //  docker compose down
-	               // docker stop laravel-container || true
-		       // docker rm laravel-container || true
-		      //  docker rmi bassam2080/laravel-php || true
-		     //   
-                             
-		//        '''
+
+        stage('Test') {
+            steps {
+                // Print the name of the current stage
+                sh 'echo "Stage: Test"'
+                // Add test commands here (e.g., run unit tests)
+            }
+        }
+
+        stage('Push') {
+            steps {
+                // Print the name of the current stage
+                sh 'echo "Stage: Push"'
+                // Add push commands here (e.g., push to a repository)
+            }
+        }
+
         stage('Clean') {
             steps {
-             echo "hi"
-	  //  sh  'docker compose down'
+                // Print the name of the current stage
+                sh 'echo "Stage: Clean"'
+                // Add clean-up commands here (e.g., remove temporary files)
             }
         }
     }
