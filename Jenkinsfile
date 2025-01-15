@@ -14,12 +14,12 @@ pipeline {
             steps {
                   sh '''
 		       
-		        docker stop laravel-container || true
-		        docker rm laravel-container || true
-		        docker rmi bassam2080/laravel-php || true
-		        docker build -t bassam2080/laravel-php .
+		        docker stop my-running-app || true
+		        docker rm my-running-app || true
+		        docker rmi tararose96/my-running-app || true
+		        docker build -t tararose96/my-running-app .
                         docker compose up -d
-		        docker push bassam2080/laravel-php
+		        docker push tararose96/my-running-app
 		        '''
             }
         }
